@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 
 class DbModule(private val context: Context) {
-    private val  db = Room.databaseBuilder(context, DbApp::class.java, "submissiongit.db")
+    private val  db = Room.databaseBuilder(context, DatabaseApp::class.java, "submissiongit.db")
         .allowMainThreadQueries()
         .build()
 

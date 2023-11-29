@@ -1,6 +1,7 @@
-package com.example.submissionfundamental1.ui.user
+package com.example.submissionfundamental1.ui.detail
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,15 +10,11 @@ import com.example.submissionfundamental1.data.api.ApiConfig
 import com.example.submissionfundamental1.data.local.DbModule
 import com.example.submissionfundamental1.data.model.UserResponse
 import com.example.submissionfundamental1.ui.main.Result
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-
 
 class DetailViewModel(private val db: DbModule) : ViewModel() {
 
+    val resultUserList: LiveData<Boolean> = MutableLiveData()
     val resultDetailUser = MutableLiveData<Result>()
     val resultFollowers = MutableLiveData<Result>()
     val resultFollowing = MutableLiveData<Result>()
@@ -28,76 +25,78 @@ class DetailViewModel(private val db: DbModule) : ViewModel() {
 
     fun getDetailUser(username: String) {
         viewModelScope.launch {
-            flow {
+            try {
                 val response = ApiConfig
                     .gitHubService
                     .getDetailUser(username)
 
-                emit(response)
-            }.onStart {
-                resultDetailUser.value = Result.Loading(true)
-            }.onCompletion {
+                resultDetailUser.value = Result.Success(response)
+            } catch (e: Exception) {
+                Log.e("Error", e.message.toString())
+                e.printStackTrace()
+                resultDetailUser.value = Result.Error(e)
+            } finally {
                 resultDetailUser.value = Result.Loading(false)
-            }.catch {
-                Log.e("Error", it.message.toString())
-                it.printStackTrace()
-                resultDetailUser.value = Result.Error(it)
-            }.collect {
-                resultDetailUser.value = Result.Success(it)
             }
         }
     }
 
+
     fun getFollowers(username: String) {
         viewModelScope.launch {
-            flow {
+            try {
+                resultFollowers.value = Result.Loading(true)
+
                 val response = ApiConfig
                     .gitHubService
                     .getFollowers(username)
 
-                emit(response)
-            }.onStart {
-                resultFollowers.value = Result.Loading(true)
-            }.onCompletion {
+                resultFollowers.value = Result.Success(response)
+            } catch (e: Exception) {
+                Log.e("Error", e.message.toString())
+                e.printStackTrace()
+                resultFollowers.value = Result.Error(e)
+            } finally {
                 resultFollowers.value = Result.Loading(false)
-            }.catch {
-                Log.e("Error", it.message.toString())
-                it.printStackTrace()
-                resultFollowers.value = Result.Error(it)
-            }.collect {
-                resultFollowers.value = Result.Success(it)
             }
         }
     }
 
+
     fun getFollowing(username: String) {
         viewModelScope.launch {
-            flow {
+            try {
+                resultFollowing.value = Result.Loading(true)
+
                 val response = ApiConfig
                     .gitHubService
                     .getFollowing(username)
 
-                emit(response)
-            }.onStart {
-                resultFollowing.value = Result.Loading(true)
-            }.onCompletion {
+                resultFollowing.value = Result.Success(response)
+            } catch (e: Exception) {
+                Log.e("Error", e.message.toString())
+                e.printStackTrace()
+                resultFollowing.value = Result.Error(e)
+            } finally {
                 resultFollowing.value = Result.Loading(false)
-            }.catch {
-                Log.e("Error", it.message.toString())
-                it.printStackTrace()
-                resultFollowing.value = Result.Error(it)
-            }.collect {
-                resultFollowing.value = Result.Success(it)
             }
         }
     }
+
+    fun checkUser(userId: Int) {
+        viewModelScope.launch {
+            val count = db.userDao.userOnList(userId)
+            (resultUserList as MutableLiveData).postValue(count > 0)
+        }
+    }
+
 
     fun setFavorite(item: UserResponse.Item?) {
         viewModelScope.launch {
             item?.let {
                 if (isFavorite) {
                     db.userDao.delete(item)
-                    resultDeleteFavorite.value = true
+                    resultDeleteFavorite.value = false
                 } else {
                     db.userDao.insert(item)
                     resultFavorite.value = true
@@ -117,6 +116,7 @@ class DetailViewModel(private val db: DbModule) : ViewModel() {
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     class Factory(private val db: DbModule) : ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T = DetailViewModel(db) as T
     }

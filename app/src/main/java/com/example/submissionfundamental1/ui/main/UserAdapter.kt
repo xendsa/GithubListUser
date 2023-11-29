@@ -11,8 +11,29 @@ import com.example.submissionfundamental1.databinding.ItemUserBinding
 class UserAdapter(
     private val data: MutableList<UserResponse.Item> = mutableListOf(),
     private val listener: (UserResponse.Item) -> Unit
-) :
-    RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+        return UserViewHolder(
+            ItemUserBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
+    }
+
+    override fun getItemCount(): Int {
+        return data.size
+    }
+
+    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+        val item = data[position]
+        holder.bind(item)
+        holder.itemView.setOnClickListener {
+            listener(item)
+        }
+    }
 
     fun setData(data: MutableList<UserResponse.Item>) {
         this.data.clear()
@@ -29,28 +50,5 @@ class UserAdapter(
 
             binding.tvUser.text = item.login
         }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        return UserViewHolder(
-            ItemUserBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-        )
-    }
-
-
-    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        val item = data[position]
-        holder.bind(item)
-        holder.itemView.setOnClickListener {
-            listener(item)
-        }
-    }
-
-    override fun getItemCount(): Int {
-        return data.size
     }
 }

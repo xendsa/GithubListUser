@@ -1,4 +1,4 @@
-package com.example.submissionfundamental1.ui.user
+package com.example.submissionfundamental1.ui.detail
 
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -25,6 +25,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
+
     private val viewModel by viewModels<DetailViewModel> {
         DetailViewModel.Factory(DbModule(this))
     }
@@ -39,6 +40,8 @@ class DetailActivity : AppCompatActivity() {
         val item = intent.getParcelableExtra<UserResponse.Item>("item")
         val username = item?.login ?: ""
 
+        viewModel.getDetailUser(username)
+        viewModel.getFollowers(username)
         viewModel.resultDetailUser.observe(this) {
             when (it) {
                 is Result.Success<*> -> {
@@ -49,14 +52,10 @@ class DetailActivity : AppCompatActivity() {
 
                     binding.tvName.text = user.name
                     binding.tvUsername.text = user.login
-
-                    val followersText =
+                    binding.tvTotalFollowers.text =
                         getString(R.string.followers_template, user.followers.toString())
-                    val followingText =
+                    binding.tvTotalFollowing.text =
                         getString(R.string.following_template, user.following.toString())
-
-                    binding.tvTotalFollowers.text = followersText
-                    binding.tvTotalFollowing.text = followingText
                 }
 
                 is Result.Error -> {
@@ -68,16 +67,19 @@ class DetailActivity : AppCompatActivity() {
                 }
             }
         }
+        getDetailUser(username)
+        setFavChange(item?.id ?: 0)
+        setFavButton(item)
+    }
 
-        viewModel.getDetailUser(username)
-
+    private fun getDetailUser(username: String) {
         val fragments = mutableListOf<Fragment>(
             FollowFragment.newInstance(FollowFragment.FOLLOWERS),
             FollowFragment.newInstance(FollowFragment.FOLLOWING)
         )
         val titleFragment = mutableListOf(
-            getString(R.string.tab_text_1),
-            getString(R.string.tab_text_2)
+            getString(R.string.followers_data),
+            getString(R.string.following_data)
         )
         val adapter = SectionsPagerAdapter(this, fragments)
         binding.viewPager.adapter = adapter
@@ -101,8 +103,14 @@ class DetailActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab?) {
             }
         })
+    }
 
-        viewModel.getFollowers(username)
+    private fun setFavChange(userId: Int) {
+        viewModel.resultUserList.observe(this) { userOnList ->
+            val setColor = if (userOnList) R.color.red
+            else R.color.white
+            binding.btnFavorite.changeIconColor(setColor)
+        }
 
         viewModel.resultFavorite.observe(this) {
             binding.btnFavorite.changeIconColor(R.color.red)
@@ -112,12 +120,16 @@ class DetailActivity : AppCompatActivity() {
             binding.btnFavorite.changeIconColor(R.color.white)
         }
 
-        binding.btnFavorite.setOnClickListener {
-            viewModel.setFavorite(item)
+        viewModel.findFavorite(userId) {
+            binding.btnFavorite.changeIconColor(R.color.red)
         }
 
-        viewModel.findFavorite(item?.id ?: 0) {
-            binding.btnFavorite.changeIconColor(R.color.white)
+        viewModel.checkUser(userId)
+    }
+
+    private fun setFavButton(itemUser: UserResponse.Item?){
+        binding.btnFavorite.setOnClickListener{
+            viewModel.setFavorite(itemUser)
         }
     }
 

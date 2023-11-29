@@ -7,15 +7,19 @@
     tools:context=".ui.setting.SettingActivity">
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switchTheme"
+        android:id="@+id/switch_theme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="144dp"
         android:layout_marginTop="340dp"
-        android:text="Light Theme"
+        android:text="Switch Theme"
         android:textOff="Light Theme"
         android:textOn="Dark Theme"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.006"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

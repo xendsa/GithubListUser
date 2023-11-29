@@ -1,4 +1,4 @@
-package com.example.submissionfundamental1.ui.user
+package com.example.submissionfundamental1.ui.detail
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,27 +34,23 @@ class FollowFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        initRecyclerView()
-        observeFollowData()
-    }
-
-    private fun initRecyclerView() {
         binding?.rvFollows?.apply {
             layoutManager = LinearLayoutManager(requireActivity())
             setHasFixedSize(true)
             adapter = this@FollowFragment.adapter
         }
+
+        followData()
     }
 
-    private fun observeFollowData() {
-        val liveDataToObserve = when (type) {
+    private fun followData() {
+        val observeLiveData = when (type) {
             FOLLOWERS -> viewModel.resultFollowers
             FOLLOWING -> viewModel.resultFollowing
             else -> throw IllegalArgumentException("Invalid type: $type")
         }
 
-        liveDataToObserve.observe(viewLifecycleOwner, this::manageResultFollows)
+        observeLiveData.observe(viewLifecycleOwner, this::manageResultFollows)
     }
 
     private fun manageResultFollows(state: Result) {

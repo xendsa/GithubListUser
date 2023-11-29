@@ -19,6 +19,9 @@ interface UserDao {
     @Query("SELECT * FROM User WHERE id LIKE :id LIMIT 1")
     fun findById(id: Int): UserResponse.Item
 
+    @Query("SELECT COUNT(*) FROM User WHERE id = :id")
+    fun userOnList(id: Int): Int
+
     @Delete
     fun delete(user: UserResponse.Item)
 }

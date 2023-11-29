@@ -5,14 +5,14 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import com.example.submissionfundamental1.data.local.SettingPreference
+import com.example.submissionfundamental1.R
 import com.example.submissionfundamental1.databinding.ActivitySettingBinding
 
 class SettingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingBinding
     private val viewModel by viewModels<SettingViewModel> {
-        SettingViewModel.Factory(SettingPreference(this))
+        SettingViewModel.Factory(SettingPreference(dataStore))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,17 +22,14 @@ class SettingActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        viewModel.getTheme().observe(this) {
-            if (it) {
-                binding.switchTheme.text = "Dark Theme"
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                binding.switchTheme.text = "Light Theme"
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
-            binding.switchTheme.isChecked = it
+        viewModel.setTheme().observe(this) { isDarkTheme ->
+            val themeTextResId = if (isDarkTheme) R.string.dark_theme else R.string.light_theme
+            binding.switchTheme.text = getString(themeTextResId)
+            val nightMode =
+                if (isDarkTheme) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            AppCompatDelegate.setDefaultNightMode(nightMode)
+            binding.switchTheme.isChecked = isDarkTheme
         }
-
         binding.switchTheme.setOnCheckedChangeListener { _, isChecked ->
             viewModel.saveTheme(isChecked)
         }
